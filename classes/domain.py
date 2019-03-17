@@ -39,10 +39,15 @@ class DataTable:
         print('Deletter executando!')
         raise AttributeError('Não pode deletar esse atributo')
 
-    def add_column(self, name, kind, description):
+    def add_column(self, name, kind, description = ''):
+        self._validate_kind(kind)
         column = Column(name, kind, description)
         self._columns.append(column)
         return column
+
+    def _validate_kind(self, kind):
+        if not kind in ('bigint', 'numeric', 'varchar'):
+            raise Exception('Tipo inválido')
 
     def add_references(self, name, to, on):
         """Cria uma referência dessa tabela para um outra tabela
@@ -93,27 +98,26 @@ class Column:
         self._description = description
         self._is_pk = False
 
-        def __str__(self):
-            _str = 'Col: {} : {} {}'.format(self._name, self._kind, self._description)
-            return _str
+    def __str__(self):
+        _str = 'Col: {} : {} {}'.format(self._name, self._kind, self._description)
+        return _str
 
-        def _validate(self, data):
-            if self._kind == 'bigint':
-                if isinstance(data, int):
-                    return True
-                return False
-            elif self._kind == 'varchar':
-                if isinstance(data, str):
-                    return True
-                return False
-            elif self._kind == 'numeric':
-                try:
-                    val = Decimal(data)
-                except:
-                    return False
+    @staticmethod
+    def validate(kind, data):
+        if kind == 'bigint':
+            if isinstance(data, int):
                 return True
-
-        validate = staticmethod(_validate)
+            return False
+        elif kind == 'varchar':
+            if isinstance(data, str):
+                return True
+            return False
+        elif kind == 'numeric':
+            try:
+                val = Decimal(data)
+            except:
+                return False
+            return True
 
 class Relationship:
     """Classe que representa um relacionamento entre DataTables
